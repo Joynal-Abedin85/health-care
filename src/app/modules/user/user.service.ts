@@ -8,7 +8,6 @@ const paitentcreate = async (req: Request) => {
   if (req.file) {
     const upload = await uploadtocloudinary(req.file);
     req.body.pataint.profilephoto = upload?.secure_url;
-    console.log({ upload });
   }
 
   const hashpass = await bcrypt.hash(req.body.password, 10);
@@ -35,13 +34,13 @@ const getallfromdb = async ({
   limit,
   searchterm,
   sortby,
-  sortorder
+  sortorder,
 }: {
   page: Number;
   limit: Number;
   searchterm: any;
-  sortby: any
-  sortorder: any
+  sortby: any;
+  sortorder: any;
 }) => {
   // console.log(page, limit)
   const userpage = page || 1;
@@ -53,22 +52,60 @@ const getallfromdb = async ({
     take: userlimit,
 
     where: {
-        email: {
-            contains: searchterm,
-            mode: "insensitive"
-        }
+      email: {
+        contains: searchterm,
+        mode: "insensitive",
+      },
     },
-    orderBy: sortby &&  sortorder ? {
-        [sortby] : sortorder
-    } : {
-        createdat: "desc"
-    }
-
+    orderBy:
+      sortby && sortorder
+        ? {
+            [sortby]: sortorder,
+          }
+        : {
+            createdat: "desc",
+          },
   });
   return user;
+};
+
+const admincreate = async (req: Request) => {
+
+    const payload = req.body
+    console.log(payload)
+  if (req.file) {
+    const upload = await uploadtocloudinary(req.file);
+    req.body.profilephoto = upload?.secure_url;
+    console.log({ upload });
+  }
+
+  const prisma = new PrismaClient();
+  const result = await prisma.$transaction(async (tx) => {
+    const isUserExist = await tx.user.findUnique({
+      where: { email: payload.email },
+    });
+
+    if (!isUserExist) {
+      throw new Error("User does not exist for this email");
+    }
+
+    const admin = await tx.admin.create({
+      data: {
+        name: payload.name,
+        email: payload.email,
+        contectnumber: payload.contectnumber,
+        profilephoto: payload.profilephoto,
+      },
+    });
+
+    return admin;
+  });
+
+  return result;
 };
 
 export const userservice = {
   paitentcreate,
   getallfromdb,
+  admincreate,
 };

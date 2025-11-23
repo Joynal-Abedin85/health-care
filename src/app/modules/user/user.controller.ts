@@ -16,6 +16,18 @@ const createpataient = catchasync(async(req: Request, res: Response)=> {
     })
 })
 
+const admincreate = catchasync(async(req: Request, res: Response) => {
+    const result = await userservice.admincreate(req)
+
+       sendResponse(res,{
+        statusCode: 201,
+        success: true,
+        message: "admin create success",
+        data: result,
+    })
+
+})
+
 const getallfromdb = catchasync(async(req: Request, res: Response)=> {
     const {page, limit, searchterm, sortby, sortorder} =req.query
     const result = await userservice.getallfromdb({page: Number(page), limit: Number(limit) ,searchterm, sortby, sortorder })
@@ -30,6 +42,7 @@ const getallfromdb = catchasync(async(req: Request, res: Response)=> {
 
 export const usercontroler = {
     createpataient,
-    getallfromdb
+    getallfromdb,
+    admincreate
 
 }
