@@ -35,7 +35,19 @@ const getallfromdb = catchasync(async(req: Request, res: Response)=> {
     sendResponse(res,{
         statusCode: 201,
         success: true,
-        message: "paitent create success",
+        message: "all get create success",
+        data: result,
+    })
+})
+
+
+const createdoctor = catchasync(async(req: Request, res: Response) => {
+    const result = await userservice.createdoctor(req)
+
+        sendResponse(res,{
+        statusCode: 201,
+        success: true,
+        message: "doctor create success",
         data: result,
     })
 })
@@ -43,6 +55,7 @@ const getallfromdb = catchasync(async(req: Request, res: Response)=> {
 export const usercontroler = {
     createpataient,
     getallfromdb,
-    admincreate
+    admincreate,
+    createdoctor
 
 }

@@ -3,33 +3,36 @@ import catchasync from "../../shared/catchasync";
 import { authservice } from "./auth.service";
 import sendResponse from "../../shared/sendresponse";
 
-const login = catchasync(async(req: Request, res: Response) => {
-    const result = await authservice.login(req.body)
-    const {accesstoken, refreshtoken, needpasschange} = result
+const login = catchasync(async (req: Request, res: Response) => {
+  const result = await authservice.login(req.body);
 
-    res.cookie("accesstoken", accesstoken, {
-        secure: true,
-        httpOnly: true,
-        sameSite: "none",
-        maxAge: 1000 * 60*60
-    })
+  const { accesstoken, refreshtoken, needpasschange, role } = result;
 
-    res.cookie("refreshtoken", refreshtoken, {
-        secure: true,
-        httpOnly: true,
-        sameSite: "none",
-        maxAge: 1000 * 60*60 *24 *7
-    })
+  res.cookie("accesstoken", accesstoken, {
+    secure: true,
+    httpOnly: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60,
+  });
 
-       sendResponse(res,{
-        statusCode: 201,
-        success: true,
-        message: "paitent create success",
-        data: {
-            needpasschange
-        },
-    })
-})
+  res.cookie("refreshtoken", refreshtoken, {
+    secure: true,
+    httpOnly: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  });
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: `${role} login successful`,
+    data: {
+      role,
+      needpasschange,
+    },
+  });
+});
+
 
 
 export const authcontroller = {

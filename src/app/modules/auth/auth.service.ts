@@ -4,39 +4,48 @@ import jwt from "jsonwebtoken";
 
 const login = async (payload: { email: string; password: string }) => {
   const prisma = new PrismaClient();
-  const user = await prisma.user.findUniqueOrThrow({
+
+  // common user find
+  const user = await prisma.user.findUnique({
     where: {
       email: payload.email,
-      status: userstatus.ACTIVE,
     },
   });
 
-  const correctpass = await bcrypt.compare(payload.password, user.password);
-
-  if (!correctpass) {
-    throw new Error("somethin pass wrong");
+  if (!user || user.status !== "ACTIVE") {
+    throw new Error("User not found or inactive");
   }
 
-  const accesstoken = jwt.sign({ email: user.email, role: user.role }, "abcd", {
-    algorithm: "HS256",
+  // password check
+  const correct = await bcrypt.compare(payload.password, user.password);
+  if (!correct) {
+    throw new Error("Wrong password");
+  }
+
+  // JWT payload
+  const jwtPayload = {
+    email: user.email,
+    role: user.role,
+    id: user.id,
+  };
+
+  // Tokens
+  const accesstoken = jwt.sign(jwtPayload, "abcd", {
     expiresIn: "1d",
   });
 
-  const refreshtoken = jwt.sign(
-    { email: user.email, role: user.role },
-    "abcde",
-    {
-      algorithm: "HS256",
-      expiresIn: "1d",
-    }
-  );
+  const refreshtoken = jwt.sign(jwtPayload, "abcde", {
+    expiresIn: "7d",
+  });
 
   return {
     accesstoken,
     refreshtoken,
-    needpasschange: user.needpasswordchng
+    role: user.role,
+    needpasschange: user.needpasswordchng,
   };
 };
+
 
 export const authservice = {
   login,

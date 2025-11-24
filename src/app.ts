@@ -4,6 +4,7 @@ import config from "./config";
 import router from "./app/routes";
 import globalerrorhandler from "./app/middleware/globalerrorhandler";
 import notfound from "./app/middleware/notfound";
+import cookieparser from "cookie-parser"
 
 
 const app: Application = express()
@@ -16,6 +17,7 @@ app.use(cors({
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+app.use(cookieparser())
 
 app.use("/api/v1", router )
 

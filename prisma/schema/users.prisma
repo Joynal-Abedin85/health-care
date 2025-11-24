@@ -1,4 +1,3 @@
-
 model User {
   id               String     @id @default(uuid())
   email            String     @unique
@@ -43,6 +42,8 @@ model Doctor {
   createdat           DateTime @default(now())
   updatedat           DateTime @updatedAt
   user                User     @relation(fields: [email], references: [email])
+
+  doctorschedule Doctorschedule[]
 }
 
 model Pataint {

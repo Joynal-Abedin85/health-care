@@ -36,11 +36,11 @@ const getallfromdb = async ({
   sortby,
   sortorder,
 }: {
-  page: Number;
-  limit: Number;
-  searchterm: any;
-  sortby: any;
-  sortorder: any;
+  page?: Number;
+  limit?: Number;
+  searchterm?: any;
+  sortby?: any;
+  sortorder?: any;
 }) => {
   // console.log(page, limit)
   const userpage = page || 1;
@@ -70,35 +70,82 @@ const getallfromdb = async ({
 };
 
 const admincreate = async (req: Request) => {
-
-    const payload = req.body
-    console.log(payload)
+  const payload = req.body;
   if (req.file) {
     const upload = await uploadtocloudinary(req.file);
     req.body.profilephoto = upload?.secure_url;
     console.log({ upload });
   }
 
-  const prisma = new PrismaClient();
-  const result = await prisma.$transaction(async (tx) => {
-    const isUserExist = await tx.user.findUnique({
-      where: { email: payload.email },
-    });
+ const hashpass = await bcrypt.hash(req.body.password, 10);
 
-    if (!isUserExist) {
-      throw new Error("User does not exist for this email");
-    }
-
-    const admin = await tx.admin.create({
+const prisma = new PrismaClient();
+const result = await prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({
       data: {
-        name: payload.name,
-        email: payload.email,
-        contectnumber: payload.contectnumber,
-        profilephoto: payload.profilephoto,
+        email: payload.admin.email,
+        password: hashpass,
+        role: "ADMIN",
       },
     });
 
-    return admin;
+    // 2b: Create Admin profile
+    const admin = await tx.admin.create({
+      data: {
+        name: payload.admin.name,
+        email: user.email, // must match user.email for relation
+        contectnumber: payload.admin.contectnumber,
+        profilephoto: payload.admin.profilephoto,
+      },
+    });
+
+    return admin
+
+  });
+
+  return result;
+};
+
+const createdoctor = async (req: Request) => {
+  const payload = req.body;
+  if (req.file) {
+    const upload = await uploadtocloudinary(req.file);
+    req.body.profilephoto = upload?.secure_url;
+    console.log({ upload });
+  }
+
+   const hashpass = await bcrypt.hash(req.body.password, 10);
+
+
+  const prisma = new PrismaClient();
+  const result = await prisma.$transaction(async (tx) => {
+        // 2a: Create User first
+    const user = await tx.user.create({
+      data: {
+        email: payload.doctor.email,
+        password: hashpass,
+        role: "DOCTOR",
+      },
+    });
+
+    // 2b: Create Doctor profile
+    const doctor = await tx.doctor.create({
+      data: {
+        name: payload.doctor.name,
+        email: user.email, // foreign key
+        contectnumber: payload.doctor.contectnumber,
+        address: payload.doctor.address,
+        registrationnumber: payload.doctor.registrationnumber,
+        gender: payload.doctor.gender,
+        apointmentfee: Number(payload.doctor.apointmentfee),
+        qulification: payload.doctor.qulification,
+        qurrentworkingplace: payload.doctor.qurrentworkingplace,
+        designation: payload.doctor.designation,
+        profilephoto: payload.doctor.profilephoto,
+      },
+    });
+
+    return doctor;
   });
 
   return result;
@@ -108,4 +155,5 @@ export const userservice = {
   paitentcreate,
   getallfromdb,
   admincreate,
+  createdoctor,
 };
