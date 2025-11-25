@@ -6,7 +6,7 @@ import sendResponse from "../../shared/sendresponse";
 const login = catchasync(async (req: Request, res: Response) => {
   const result = await authservice.login(req.body);
 
-  const { accesstoken, refreshtoken, needpasschange, role } = result;
+  const { accesstoken, refreshtoken} = result;
 
   res.cookie("accesstoken", accesstoken, {
     secure: true,
@@ -22,14 +22,12 @@ const login = catchasync(async (req: Request, res: Response) => {
     maxAge: 1000 * 60 * 60 * 24 * 7,
   });
 
+
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: `${role} login successful`,
-    data: {
-      role,
-      needpasschange,
-    },
+    message: `${result.user.role} login successful`,
+    data: result.user
   });
 });
 
