@@ -6,6 +6,7 @@ import { doctorcontroller } from './doctor.controller';
 const router = express.Router()
 
 router.get("/",  doctorcontroller.getdoctor)
+router.patch("/:id", doctorcontroller.updatedoctor)
 
 
 export const doctorrouter = router

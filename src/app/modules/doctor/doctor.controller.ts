@@ -4,12 +4,10 @@ import sendResponse from "../../shared/sendresponse"
 import { doctorservice } from "./doctor.service"
 
 const getdoctor = catchasync(async(req: Request& {user?: any}, res: Response) => {
-        const {page, limit, searchterm, sortby, sortorder,startdate,enddate} =req.query
+        const {page, limit, searchterm, sortby, sortorder, email, contectnumber, gender, apointmentfee,specialities} =req.query
 
-        const user = req.user
-        console.log(user,"get")
-        const result = await doctorservice.getdoctor({page: Number(page), limit: Number(limit) ,searchterm, sortby, sortorder,startdate,enddate,user })
-     
+        const result = await doctorservice.getdoctor({page: Number(page), limit: Number(limit) ,searchterm, sortby, sortorder, email, contectnumber, gender, apointmentfee })
+     console.log({result})
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -19,6 +17,22 @@ const getdoctor = catchasync(async(req: Request& {user?: any}, res: Response) =>
 })
 
 
+const updatedoctor = catchasync(async(req: Request, res: Response) => {
+    const {id} = req.params
+
+    const result = await doctorservice.updatedoctor(id, req.body)
+
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: " update is success",
+        data: result
+    })
+})
+
+
 export const doctorcontroller = {
-    getdoctor
+    getdoctor,
+    updatedoctor
 }
